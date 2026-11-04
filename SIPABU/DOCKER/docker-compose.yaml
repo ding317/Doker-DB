@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: sipabu_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin_sipabu
+      POSTGRES_PASSWORD: pasword_sipabu
+      POSTGRES_DB: sipabu_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../DB/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build: .
+    container_name: sipabu_api
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - maven-repo:/root/.m2
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/sipabu_db
+      SPRING_DATASOURCE_USERNAME: admin_sipabu
+      SPRING_DATASOURCE_PASSWORD: pasword_sipabu
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 3000
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  maven-repo:
